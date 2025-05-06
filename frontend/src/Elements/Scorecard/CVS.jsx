@@ -200,14 +200,14 @@ export default function Dashboard({ dateRange }) {
         <ChartContent />
       </div>
 
-      {showTooltip && !showOverlay && (
+      {/* {showTooltip && !showOverlay && (
         <div
           className="tooltip"
           style={{ top: tooltipPosition.y, left: tooltipPosition.x }}
         >
           Click for more information
         </div>
-      )}
+      )} */}
 
       {showOverlay && (
         <div className="graph-overlay">
