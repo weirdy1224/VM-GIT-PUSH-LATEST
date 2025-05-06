@@ -1,0 +1,85 @@
+/* Basic reset for margin and padding */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Overall background */
+body {
+  background-color: #f4f5f7;
+}
+
+/* Main container styling */
+.overview-container {
+  max-width: 1500px;
+  width: 1250px;
+  margin: 1rem auto;
+  margin-right: 1rem;
+  padding: 2rem;
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Header styling */
+.overview-header {
+  text-align: left;
+  margin-bottom: 2rem;
+  margin-left: 30px;
+
+}
+
+.overview-header h1 {
+  font-size: 30px;
+  color: #333;
+  font-weight: 600;
+}
+
+.overview-subtitle {
+  font-size: 14px;
+  color: #888;
+}
+
+/* Vulnerability circles section */   
+.vuln-section {
+display: flex;
+gap: 1rem;
+justify-content: center;
+padding: 1rem 0;
+}
+
+.vuln-section > div {
+padding: 1rem;
+transition: transform 0.2s ease;
+}
+
+.vuln-section > div:hover {
+transform: scale(1.05);
+}
+/* Scan summary styling */
+.scan-summary {
+  margin: 2rem 0;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+/* Vulnerability list section */
+.vuln-list {
+  display: flex;
+  flex-direction: row;
+  gap: 14rem;
+  margin-top: 1.5rem;
+  margin-left: 3rem;
+  margin-right: 50px;
+}
+
+/* Table styling */
+.vuln-list > div {
+  background-color: #ffffff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+

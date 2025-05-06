@@ -1,0 +1,24 @@
+.date {
+  margin-top: 40px;
+}
+.cvs_graph {
+  width: 600px;
+  margin-top: 20px;
+}
+.bubble_graph {
+  width: 600px;
+  max-height: 200px;
+  margin-top: 44px;
+}
+
+.scorecard-container {
+  background-color: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  width: 1250px;
+  margin: 3rem auto;
+  margin-right: 1rem;
+  padding: 2rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 100px;
+}
