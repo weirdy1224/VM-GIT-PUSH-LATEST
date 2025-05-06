@@ -1,46 +1,119 @@
-.vulnerabilities-container {
-  background-color: #ffffff;
-  border: 1px solid #e0e0e0;
-  border-radius: 12px;
-  width: 1250px;
-  margin: 3rem auto;
-  transition: opacity 0.3s ease;
-  margin-right: 1rem;
-  padding: 2.5rem;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.05);
-  background: linear-gradient(135deg, #ffffff 0%, #f9f9f9 100%);
-  overflow: hidden;
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #ffffff;
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --accent: #6d28d9;
+  --accent-hover: #5b21b6;
+  --border: #e5e7eb;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --navbar-bg-start: #101a29;
+  --navbar-bg-end: #2d426a;
 }
 
-.vuln-table {
+[data-theme="dark"] {
+  --bg-primary: #1f2937;
+  --bg-secondary: #374151;
+  --text-primary: #d1d5db;
+  --text-secondary: #9ca3af;
+  --accent: #a78bfa;
+  --accent-hover: #8b5cf6;
+  --border: #4b5563;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --navbar-bg-start: #0a1421;
+  --navbar-bg-end: #1a2b4a;
+}
+
+.vulnerabilities-container {
+  flex: 1;
+  padding: 2rem;
+  background: var(--bg-primary);
+  margin-left: 200px;
+  margin-top: 100px;
+}
+
+.data-card {
+  background: var(--bg-secondary);
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.data-card h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+}
+
+.search-bar {
+  position: relative;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.search-bar input {
+  width: 100%;
+  padding: 0.75rem 3rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.search-bar svg {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+}
+
+table {
   width: 100%;
   border-collapse: collapse;
-  background-color: #fff;
-  border-radius: 8px;
-  overflow: hidden;
+  margin-top: 1rem;
 }
 
-.vuln-table th,
-.vuln-table td {
-  padding: 14px;
+thead {
+  background-color: var(--border);
+}
+
+th,
+td {
+  padding: 0.75rem;
   text-align: left;
-  border-bottom: 1px solid #e0e0e0;
-  font-family: "Arial", sans-serif;
-  color: #333;
+  font-size: 0.875rem;
 }
 
-.vuln-table th {
-  cursor: pointer;
-  background-color: #b8b1b0;
-  color: #fff;
-  font-weight: 600;
+th {
+  font-weight: 500;
+  color: var(--text-secondary);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  cursor: pointer;
 }
 
-.vuln-table tr:hover {
-  background-color: #f0f0f0;
-  transition: background-color 0.2s ease;
+th:hover {
+  color: var(--accent);
+}
+
+td {
+  color: var(--text-primary);
+}
+
+tbody tr:nth-child(odd) {
+  background-color: var(--bg-primary);
+}
+
+tbody tr:hover {
+  background-color: var(--border);
+}
+
+.error-message {
+  color: #dc2626;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
 }
 
 .vulnerability-popup {
@@ -52,17 +125,19 @@
   align-items: center;
   z-index: 1000;
   backdrop-filter: blur(5px);
+  width: 1600px;
 }
 
 .vulnerability-popup-content {
-  background-color: #ffffff;
+  background: var(--bg-secondary);
   padding: 2rem;
   border-radius: 12px;
   width: 80%;
-  max-height: 100vh;
+  max-width: 1000px;
+  max-height: 80vh;
   overflow-y: auto;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e0e0e0;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
   animation: slideIn 0.3s ease-out;
 }
 
@@ -80,49 +155,32 @@
 .vulnerability-popup-content h2 {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #1e3a8a;
+  color: var(--accent);
   margin-bottom: 1.5rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.vulnerability-popup-content button {
-  margin-top: 1.5rem;
-  padding: 0.75rem 1.5rem;
-  background-color: #1e40af;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.vulnerability-popup-content button:hover {
-  background-color: #1e3a8a;
 }
 
 .vulnerability-popup-content p {
   margin: 0.75rem 0;
   line-height: 1.6;
-  color: #444;
+  color: var(--text-primary);
 }
 
 .vulnerability-popup-content p strong {
-  color: #1e3a8a;
+  color: var(--accent);
 }
 
+.vulnerability-popup-content ul,
 .vulnerability-popup-content ol {
   margin: 0.75rem 0 1.5rem 1.5rem;
-  color: #555;
+  color: var(--text-primary);
 }
 
-.vulnerability-popup-content ol li {
+.vulnerability-popup-content li {
   margin-bottom: 0.5rem;
 }
 
 .vulnerability-popup-content a {
-  color: #1e40af;
+  color: var(--accent);
   text-decoration: none;
 }
 
@@ -130,12 +188,73 @@
   text-decoration: underline;
 }
 
-.severity-high {
-  display: inline-block;
+.vulnerability-popup-content button {
+  margin-top: 1.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--accent);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.vulnerability-popup-content button:hover {
+  background: var(--accent-hover);
+}
+
+.severity-badge {
   padding: 0.25rem 0.75rem;
-  background-color: #ef4444;
-  color: #fff;
-  border-radius: 9999px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #ffffff;
+}
+
+.severity-badge.critical {
+  background: #dc2626;
+}
+
+.severity-badge.high {
+  background: #f97316;
+}
+
+.severity-badge.medium {
+  background: #facc15;
+  color: #1f2937;
+}
+
+.severity-badge.low {
+  background: #22c55e;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.pagination button {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
   font-size: 0.875rem;
-  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pagination button:hover {
+  background: var(--accent);
+  color: #ffffff;
+  border-color: var(--accent);
+}
+
+.pagination button.active {
+  background: var(--accent);
+  color: #ffffff;
+  border-color: var(--accent);
 }

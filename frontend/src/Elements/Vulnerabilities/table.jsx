@@ -10,6 +10,8 @@ export default function VulnTable() {
   const [vulnDetails, setVulnDetails] = useState(null);
   const [error, setError] = useState(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const recordsPerPage = 5;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -105,82 +107,119 @@ export default function VulnTable() {
     )
   );
 
+  const flattenedData = filteredData.flatMap((item) =>
+    item.vulnerabilities.map((vuln, index) => ({
+      ...item,
+      vuln,
+      index: `${item._id}-${index}`,
+    }))
+  );
+
+  const totalRecords = flattenedData.length;
+  const totalPages = Math.ceil(totalRecords / recordsPerPage);
+  const startIndex = (currentPage - 1) * recordsPerPage;
+  const paginatedData = flattenedData.slice(startIndex, startIndex + recordsPerPage);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const renderPagination = () => {
+    const pages = [];
+    const maxPagesToShow = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+    let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+
+    if (endPage - startPage + 1 < maxPagesToShow) {
+      startPage = Math.max(1, endPage - maxPagesToShow + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(
+        <button
+          key={i}
+          onClick={() => handlePageChange(i)}
+          className={currentPage === i ? "active" : ""}
+        >
+          {i}
+        </button>
+      );
+    }
+
+    if (startPage > 1) {
+      pages.unshift(<button key="first" onClick={() => handlePageChange(1)}>1</button>);
+      if (startPage > 2) pages.unshift(<span key="dots-start">...</span>);
+    }
+
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) pages.push(<span key="dots-end">...</span>);
+      pages.push(<button key="last" onClick={() => handlePageChange(totalPages)}>{totalPages}</button>);
+    }
+
+    return <div className="pagination">{pages}</div>;
+  };
+
   return (
-    <div className="flex justify-center relative">
-      <div
-        className={`vulnerabilities-container ${
-          selectedItem ? "opacity-60" : ""
-        }`}
-      >
-        {/* Search Input */}
-        <div className="mb-4 relative">
+    <div className="relative">
+      <div className={`data-card ${selectedItem ? "opacity-60" : ""}`}>
+        <h2>Vulnerabilities</h2>
+        <div className="search-bar">
           <input
             type="text"
             placeholder="Search..."
-            className="w-full p-2 pl-10 pr-4 border rounded-md"
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <Search className="w-5 h-5" />
         </div>
 
-        {/* Error Message */}
-        {error && <div className="text-red-500 mb-4">{error}</div>}
+        {error && <div className="error-message">{error}</div>}
 
-        {/* Table */}
-        <div className="max-h-96 overflow-y-auto">
-          <table className="vuln-table">
-            <thead>
-              <tr style={{ backgroundColor: "#b8b1b0", color: "white" }}>
-                {["Domain", "Severity", "IP Address"].map((header) => (
-                  <th
-                    key={header}
-                    onClick={() => handleSort(header.toLowerCase())}
-                    className="cursor-pointer"
-                  >
-                    {header} <ChevronDown className="inline-block w-4" />
-                  </th>
-                ))}
+        <table>
+          <thead>
+            <tr>
+              {["Domain", "Severity", "IP Address"].map((header) => (
+                <th key={header} onClick={() => handleSort(header.toLowerCase())}>
+                  {header} <ChevronDown className="inline-block w-4 h-4" />
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {paginatedData.map((item) => (
+              <tr
+                key={item.index}
+                onClick={() => handleRowClick(item, item.vuln)}
+                className="cursor-pointer"
+              >
+                <td>{item.domain}</td>
+                <td>
+                  <span className={`severity-badge ${item.vuln.severity.toLowerCase()}`}>
+                    {item.vuln.severity}
+                  </span>
+                </td>
+                <td>{item.ip_address || "N/A"}</td>
               </tr>
-            </thead>
-            <tbody>
-              {filteredData.flatMap((item) =>
-                item.vulnerabilities.map((vuln, index) => (
-                  <tr
-                    key={`${item._id}-${index}`}
-                    onClick={() => handleRowClick(item, vuln)}
-                    className="cursor-pointer hover:bg-gray-200"
-                  >
-                    <td>{item.domain}</td>
-                    <td>{vuln.severity}</td>
-                    <td>{item.ip_address || "N/A"}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
+
+        {totalPages > 1 && renderPagination()}
       </div>
 
-      {/* Vulnerability Description Popup */}
       {selectedItem && (
         <div className="vulnerability-popup">
           <div className="vulnerability-popup-content">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold text-blue-900">
-                Vulnerability Description
-              </h2>
-            </div>
+            <h2>Vulnerability Description</h2>
             {loadingDetails ? (
               <div>Loading vulnerability details...</div>
             ) : vulnDetails ? (
               <div>
                 <p>
-                  <strong>Vulnerability name:</strong>{" "}
-                  {vulnDetails.name || "N/A"}
+                  <strong>Vulnerability Name:</strong> {vulnDetails.name || "N/A"}
                 </p>
                 <p>
                   <strong>Severity:</strong>{" "}
-                  <span className={`severity-${selectedItem.severity}`}>
+                  <span className={`severity-badge ${selectedItem.severity.toLowerCase()}`}>
                     {selectedItem.severity}
                   </span>
                 </p>
@@ -196,7 +235,7 @@ export default function VulnTable() {
                 </p>
                 <p>
                   <strong>Impact:</strong>
-                  <ul className="list-disc pl-5">
+                  <ul className="list-disc">
                     {(vulnDetails.impact || []).map((item, index) => (
                       <li key={index}>{item}</li>
                     ))}
@@ -204,26 +243,24 @@ export default function VulnTable() {
                 </p>
                 <p>
                   <strong>Proof of Concept:</strong>
-                  <ol className="list-decimal pl-5">
-                    {(vulnDetails.proofOfConcept || []).map(
-                      (stepObj, index) => (
-                        <li key={stepObj._id} className="mb-2">
-                          {stepObj.step}
-                          {stepObj.image && (
-                            <img
-                              src={stepObj.image}
-                              alt={`Proof step ${index + 1}`}
-                              className="mt-2 max-w-xs"
-                            />
-                          )}
-                        </li>
-                      )
-                    )}
+                  <ol className="list-decimal">
+                    {(vulnDetails.proofOfConcept || []).map((stepObj, index) => (
+                      <li key={stepObj._id} className="mb-2">
+                        {stepObj.step}
+                        {stepObj.image && (
+                          <img
+                            src={stepObj.image}
+                            alt={`Proof step ${index + 1}`}
+                            className="mt-2 max-w-xs"
+                          />
+                        )}
+                      </li>
+                    ))}
                   </ol>
                 </p>
                 <p>
                   <strong>Remediation:</strong>
-                  <ul className="list-disc pl-5">
+                  <ul className="list-disc">
                     {(vulnDetails.remediation || []).map((item, index) => (
                       <li key={index}>{item}</li>
                     ))}
@@ -231,12 +268,8 @@ export default function VulnTable() {
                 </p>
                 {vulnDetails.references && (
                   <p>
-                    <strong>Reference link:</strong>{" "}
-                    <a
-                      href={vulnDetails.references}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
+                    <strong>Reference Link:</strong>{" "}
+                    <a href={vulnDetails.references} target="_blank" rel="noopener noreferrer">
                       {vulnDetails.references}
                     </a>
                   </p>
@@ -245,12 +278,7 @@ export default function VulnTable() {
             ) : (
               <div>No details available</div>
             )}
-            <button
-              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-              onClick={handleClosePopup}
-            >
-              Close
-            </button>
+            <button onClick={handleClosePopup}>Close</button>
           </div>
         </div>
       )}

@@ -7,6 +7,8 @@ function DiscoveryTable1() {
   const [searchTerm, setSearchTerm] = useState("");
   const [data, setData] = useState([]);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+  const [currentPage, setCurrentPage] = useState(1);
+  const recordsPerPage = 5;
 
   useEffect(() => {
     const fetchReports = async () => {
@@ -61,83 +63,121 @@ function DiscoveryTable1() {
     )
   );
 
+  const flattenedData = filteredData.flatMap((item, index) =>
+    (item.vulnerabilities || []).map((vuln, vulnIndex) => ({
+      ...item,
+      vuln,
+      index: `${index}-${vulnIndex}`,
+    }))
+  );
+
+  const totalRecords = flattenedData.length;
+  const totalPages = Math.ceil(totalRecords / recordsPerPage);
+  const startIndex = (currentPage - 1) * recordsPerPage;
+  const paginatedData = flattenedData.slice(startIndex, startIndex + recordsPerPage);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const renderPagination = () => {
+    const pages = [];
+    const maxPagesToShow = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+    let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+
+    if (endPage - startPage + 1 < maxPagesToShow) {
+      startPage = Math.max(1, endPage - maxPagesToShow + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(
+        <button
+          key={i}
+          onClick={() => handlePageChange(i)}
+          className={currentPage === i ? "active" : ""}
+        >
+          {i}
+        </button>
+      );
+    }
+
+    if (startPage > 1) {
+      pages.unshift(<button key="first" onClick={() => handlePageChange(1)}>1</button>);
+      if (startPage > 2) pages.unshift(<span key="dots-start">...</span>);
+    }
+
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) pages.push(<span key="dots-end">...</span>);
+      pages.push(<button key="last" onClick={() => handlePageChange(totalPages)}>{totalPages}</button>);
+    }
+
+    return <div className="pagination">{pages}</div>;
+  };
+
   return (
-    <div className="bg-white shadow-md rounded-lg p-6 hi">
-      {/* Search Input */}
-      <div className="mb-4 relative">
+    <div className="data-card">
+      <h2>Discovery Reports</h2>
+      <div className="search-bar">
         <input
           type="text"
           placeholder="Search..."
-          className="w-full p-2 pl-10 pr-4 border rounded-md"
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+        <Search className="w-5 h-5" />
       </div>
 
-      {/* Table */}
-      <div className="max-h-96 overflow-y-auto">
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="bg-gray-200">
-              {["URL", "DOMAIN", "IP", "PROGRESS", "STATUS"].map((header) => (
-                <th
-                  key={header}
-                  className="p-2 text-left cursor-pointer"
-                  onClick={() => handleSort(header.toLowerCase())}
+      <table>
+        <thead>
+          <tr>
+            {["URL", "DOMAIN", "IP", "PROGRESS", "STATUS"].map((header) => (
+              <th key={header} onClick={() => handleSort(header.toLowerCase())}>
+                {header} <ChevronDown className="inline-block w-4 h-4" />
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {paginatedData.map((item) => (
+            <tr key={item.index}>
+              <td>{item.vuln.location || "N/A"}</td>
+              <td>{item.domain || "N/A"}</td>
+              <td>{item.ip_address || "N/A"}</td>
+              <td>
+                <div className="progress-container">
+                  <div
+                    className="progress-bar"
+                    style={{
+                      width: `${item.vuln.cvss_score ? item.vuln.cvss_score * 10 : 0}%`,
+                    }}
+                  ></div>
+                </div>
+              </td>
+              <td>
+                <span
+                  className={`status-tag ${
+                    item.vuln.cvss_score >= 7
+                      ? "critical"
+                      : item.vuln.cvss_score >= 4
+                      ? "medium"
+                      : item.vuln.cvss_score > 0
+                      ? "low"
+                      : "pending"
+                  }`}
                 >
-                  {header} <ChevronDown className="inline-block w-4 h-4" />
-                </th>
-              ))}
+                  {item.vuln.cvss_score ? `${item.vuln.cvss_score}` : "Pending"}
+                </span>
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {filteredData.flatMap((item, index) =>
-              (item.vulnerabilities || []).map((vuln, vulnIndex) => (
-                <tr key={`${index}-${vulnIndex}`} className="border-b">
-                  <td className="p-2">{vuln.location || "N/A"}</td>
-                  <td className="p-2">{item.domain || "N/A"}</td>
-                  <td className="p-2">{item.ip_address || "N/A"}</td>
-                  <td className="p-2">
-                    <div className="w-full bg-gray-200 rounded-full h-2.5">
-                      <div
-                        className="bg-blue-600 h-2.5 rounded-full"
-                        style={{
-                          width: `${
-                            vuln.cvss_score ? vuln.cvss_score * 10 : 0
-                          }%`,
-                        }}
-                      ></div>
-                    </div>
-                  </td>
-                  <td className="p-2">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs ${
-                        vuln.cvss_score >= 7
-                          ? "bg-red-200 text-red-800"
-                          : vuln.cvss_score >= 4
-                          ? "bg-yellow-200 text-yellow-800"
-                          : vuln.cvss_score > 0
-                          ? "bg-green-200 text-green-800"
-                          : "bg-gray-200 text-gray-800"
-                      }`}
-                    >
-                      {vuln.cvss_score ? `${vuln.cvss_score}` : "Pending"}
-                    </span>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+          ))}
+        </tbody>
+      </table>
+
+      {totalPages > 1 && renderPagination()}
     </div>
   );
 }
 
 export default function DiscoveryTable() {
-  return (
-    <div className="f">
-      <DiscoveryTable1 />
-    </div>
-  );
+  return <DiscoveryTable1 />;
 }

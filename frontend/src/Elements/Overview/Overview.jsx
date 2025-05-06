@@ -1,20 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../Navbar/Navbar";
-import Vuln_circle from "./vuln_circle";
-import ScanSummary from "./scan_summary.jsx";
+import axios from "axios";
 import "./Overview.css";
 import VulnerableTargetsTable from "./VulnerableTargetsTable.jsx";
 import TopVulnerabilitiesList from "./TopVulnerability.jsx";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { User, Settings, LogOut } from "lucide-react";
-import axios from "axios";
+import ScanSummary from "./scan_summary.jsx";
 
 function Overview() {
   const navigate = useNavigate();
@@ -25,13 +16,10 @@ function Overview() {
     Low: 0,
   });
 
-  function handleLogout() {
-    localStorage.removeItem("companyName");
-    localStorage.removeItem("email");
-    localStorage.removeItem("token");
-    localStorage.removeItem("userId");
-    navigate("/");
-  }
+  useEffect(() => {
+    const theme = localStorage.getItem("theme") || "light";
+    document.documentElement.setAttribute("data-theme", theme);
+  }, []);
 
   useEffect(() => {
     const fetchVulnerabilityData = async () => {
@@ -66,47 +54,33 @@ function Overview() {
   }, []);
 
   return (
-    <div className="flex">
+    <div className="dashboard-container">
       <Navbar />
-      <div className="overview-container">
-        <div className="overview-header flex items-center justify-between">
-          <h1>Hello, User</h1>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                className="w-auto justify-between px-4 py-3 hover:bg-slate-200 transition-colors duration-200"
-              >
-                <div className="flex items-center">
-                  <User className="w-5 h-5 mr-3" />
-                  <span className="text-sm font-medium">Account</span>
-                </div>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56 bg-gray-300 text-black-400 border-gray-700">
-              <DropdownMenuItem className="focus:bg-gray-700 focus:text-gray-200">
-                <Settings className="w-4 h-4 mr-2" />
-                <span>Account Details</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="focus:bg-gray-700 focus:text-gray-200"
-                onClick={handleLogout}
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                <span>Logout</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+      <div className="main-content">
+        <div className="header">
+          <h1>Security Dashboard</h1>
         </div>
 
-        <div className="vuln-section">
-          <Vuln_circle count={severityCounts.Critical} severity="Critical" />
-          <Vuln_circle count={severityCounts.High} severity="High" />
-          <Vuln_circle count={severityCounts.Medium} severity="Medium" />
-          <Vuln_circle count={severityCounts.Low} severity="Low" />
+        <div className="stats-grid">
+          <div className="stat-card">
+            <h3>Critical</h3>
+            <p>{severityCounts.Critical}</p>
+          </div>
+          <div className="stat-card">
+            <h3>High</h3>
+            <p>{severityCounts.High}</p>
+          </div>
+          <div className="stat-card">
+            <h3>Medium</h3>
+            <p>{severityCounts.Medium}</p>
+          </div>
+          <div className="stat-card">
+            <h3>Low</h3>
+            <p>{severityCounts.Low}</p>
+          </div>
         </div>
 
-        <div className="scan-summary">
+        <div className="summary-table">
           <ScanSummary
             scansRunning={1}
             totalScansCompleted={3}
@@ -115,7 +89,7 @@ function Overview() {
           />
         </div>
 
-        <div className="vuln-list">
+        <div className="data-section">
           <VulnerableTargetsTable />
           <TopVulnerabilitiesList />
         </div>
