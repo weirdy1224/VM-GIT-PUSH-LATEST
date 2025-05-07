@@ -29,6 +29,7 @@ export default function Reports() {
       const response = await axios.get("http://localhost:5000/api/users", {
         withCredentials: true,
       });
+      console.log("Fetched users:", response.data);
       setUsers(response.data);
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -124,6 +125,7 @@ export default function Reports() {
   const handleSaveReport = async () => {
     if (!manualData.userId) return alert("Please select a user.");
     setIsLoading(true);
+    console.log("Saving report with userId:", manualData.userId);
     try {
       await axios.post("http://localhost:5000/api/save-report", manualData, {
         withCredentials: true,
@@ -153,17 +155,16 @@ export default function Reports() {
   };
 
   const handleFileUpload = async () => {
-    const userId = localStorage.getItem("userId");
-
-    if (!selectedFile || !userId) {
-      return alert("Please select a PDF and ensure the user is logged in.");
+    if (!selectedFile || !manualData.userId) {
+      return alert("Please select a PDF and a user.");
     }
 
     setIsLoading(true);
 
     const formData = new FormData();
     formData.append("file", selectedFile);
-    formData.append("userId", userId); // Attach userId
+    console.log("Uploading with userId:", manualData.userId);
+    formData.append("userId", manualData.userId);
 
     try {
       const res = await axios.post(
@@ -171,7 +172,7 @@ export default function Reports() {
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
-          withCredentials: true, // Ensures credentials are included if needed
+          withCredentials: true,
         }
       );
 
@@ -214,14 +215,17 @@ export default function Reports() {
             <h1 className="report-title">Vulnerability Report</h1>
             <select
               value={manualData.userId}
-              onChange={(e) =>
-                setManualData({ ...manualData, userId: e.target.value })
-              }
+              onChange={(e) => {
+                const selectedUserId = e.target.value;
+                const selectedUser = users.find(user => user._id === selectedUserId);
+                console.log("Selected user:", selectedUser);
+                setManualData({ ...manualData, userId: selectedUserId });
+              }}
               className="form-input"
             >
               <option value="">Select a user</option>
               {users.map((user) => (
-                <option key={user._id} value={user.uniqueId}>
+                <option key={user._id} value={user._id}>
                   {user.companyName}
                 </option>
               ))}
@@ -377,14 +381,17 @@ export default function Reports() {
             <h1 className="upload-title">Upload PDF Report</h1>
             <select
               value={manualData.userId}
-              onChange={(e) =>
-                setManualData({ ...manualData, userId: e.target.value })
-              }
+              onChange={(e) => {
+                const selectedUserId = e.target.value;
+                const selectedUser = users.find(user => user._id === selectedUserId);
+                console.log("Selected user:", selectedUser);
+                setManualData({ ...manualData, userId: selectedUserId });
+              }}
               className="form-input"
             >
               <option value="">Select a user</option>
               {users.map((user) => (
-                <option key={user._id} value={user.uniqueId}>
+                <option key={user._id} value={user._id}>
                   {user.companyName}
                 </option>
               ))}

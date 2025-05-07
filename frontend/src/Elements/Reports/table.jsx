@@ -1,7 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { Filter } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import axios from "axios";
-import "./Reports.css";
 
 const BASE_URL = "http://localhost:5000";
 
@@ -21,6 +30,10 @@ const handleDownload = async (filePath, domain) => {
       ? domain.replace(/https?:\/\//, "").replace(/\W+/g, "_")
       : "report";
 
+    // ✅ Try opening in a new tab (optional for preview)
+    window.open(fileUrl, "_blank");
+
+    // ✅ Use Fetch API to download as Blob (handles CORS issues)
     const response = await fetch(fileUrl);
     if (!response.ok)
       throw new Error(`Failed to fetch file: ${response.status}`);
@@ -28,12 +41,14 @@ const handleDownload = async (filePath, domain) => {
     const blob = await response.blob();
     const url = URL.createObjectURL(blob);
 
+    // ✅ Create and trigger download
     const link = document.createElement("a");
     link.href = url;
     link.download = `${sanitizedDomain}.pdf`;
     document.body.appendChild(link);
     link.click();
 
+    // ✅ Cleanup
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   } catch (error) {
@@ -47,8 +62,6 @@ export default function ReportTable() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [globalFilter, setGlobalFilter] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const recordsPerPage = 5;
 
   useEffect(() => {
     const fetchReports = async () => {
@@ -102,119 +115,82 @@ export default function ReportTable() {
     fetchReports();
   }, []);
 
-  const filteredReports = reports.filter((report) =>
-    Object.values(report).some((value) =>
-      value?.toString().toLowerCase().includes(globalFilter.toLowerCase())
-    )
-  );
-
-  const totalRecords = filteredReports.length;
-  const totalPages = Math.ceil(totalRecords / recordsPerPage);
-  const startIndex = (currentPage - 1) * recordsPerPage;
-  const paginatedReports = filteredReports.slice(startIndex, startIndex + recordsPerPage);
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
-
-  const renderPagination = () => {
-    const pages = [];
-    const maxPagesToShow = 5;
-    let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
-    let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
-
-    if (endPage - startPage + 1 < maxPagesToShow) {
-      startPage = Math.max(1, endPage - maxPagesToShow + 1);
-    }
-
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(
-        <button
-          key={i}
-          onClick={() => handlePageChange(i)}
-          className={currentPage === i ? "active" : ""}
-        >
-          {i}
-        </button>
-      );
-    }
-
-    if (startPage > 1) {
-      pages.unshift(<button key="first" onClick={() => handlePageChange(1)}>1</button>);
-      if (startPage > 2) pages.unshift(<span key="dots-start">...</span>);
-    }
-
-    if (endPage < totalPages) {
-      if (endPage < totalPages - 1) pages.push(<span key="dots-end">...</span>);
-      pages.push(<button key="last" onClick={() => handlePageChange(totalPages)}>{totalPages}</button>);
-    }
-
-    return <div className="pagination">{pages}</div>;
-  };
-
   return (
-    <div className="data-card">
-      <h2>Reports</h2>
-      <div className="search-bar">
-        <input
+    <div className="w-full space-y-4">
+      {/* Filter Input */}
+      <div className="relative">
+        <Filter className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+        <Input
           placeholder="Filter reports..."
           value={globalFilter}
           onChange={(e) => setGlobalFilter(e.target.value)}
+          className="pl-9 max-w-full"
         />
-        <Filter className="w-5 h-5" />
       </div>
 
-      {error && <div className="error-message">{error}</div>}
-
-      <table>
-        <thead>
-          <tr>
-            <th>S.No</th>
-            <th>Report Template</th>
-            <th>Domain</th>
-            <th>Created On</th>
-            <th>Download</th>
-          </tr>
-        </thead>
-        <tbody>
-          {loading ? (
-            <tr>
-              <td colSpan={5} className="text-center py-4">
-                Loading...
-              </td>
-            </tr>
-          ) : paginatedReports.length > 0 ? (
-            paginatedReports.map((report) => (
-              <tr key={report.id}>
-                <td>{report.serialNumber}</td>
-                <td>{report.template}</td>
-                <td>{report.domain}</td>
-                <td>{report.createdOn}</td>
-                <td>
-                  {report.filePath ? (
-                    <button
-                      className="download-button"
-                      onClick={() => handleDownload(report.filePath, report.domain)}
-                    >
-                      Download PDF
-                    </button>
-                  ) : (
-                    <span className="not-available">Not Available</span>
-                  )}
-                </td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan={5} className="text-center py-4">
-                No reports available.
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-
-      {totalPages > 1 && renderPagination()}
+      {/* Report Table */}
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader className="bg-blue-900 text-white font-medium h-11">
+            <TableRow>
+              <TableHead>S.No</TableHead>
+              <TableHead>Report Template</TableHead>
+              <TableHead>Domain</TableHead>
+              <TableHead>Created On</TableHead>
+              <TableHead>Download</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center py-4">
+                  Loading...
+                </TableCell>
+              </TableRow>
+            ) : error ? (
+              <TableRow>
+                <TableCell
+                  colSpan={5}
+                  className="text-red-500 text-center py-4"
+                >
+                  {error}
+                </TableCell>
+              </TableRow>
+            ) : reports.length > 0 ? (
+              reports.map((report) => (
+                <TableRow key={report.id}>
+                  <TableCell>{report.serialNumber}</TableCell>
+                  <TableCell>{report.template}</TableCell>
+                  <TableCell>{report.domain}</TableCell>
+                  <TableCell>{report.createdOn}</TableCell>
+                  <TableCell>
+                    {report.filePath ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-6 rounded-full text-xs"
+                        onClick={() =>
+                          handleDownload(report.filePath, report.domain)
+                        }
+                      >
+                        Download PDF
+                      </Button>
+                    ) : (
+                      <span className="text-gray-500">Not Available</span>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center py-4">
+                  No reports available.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }

@@ -13,9 +13,9 @@ import {
 // Navigation data structure
 const navigation = {
   pages: [
-    { name: "Clients", link: "/admin/client" },
-    { name: "User Management", link: "/admin/user-management" },
-    { name: "Upload Reports", link: "/admin/upload-reports" },
+    { name: "Clients", link: "/client" },
+    { name: "User Management", link: "/user-management" },
+    { name: "Upload Reports", link: "/upload-reports" },
   ]
 };
 
