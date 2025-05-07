@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { NavLink } from "react-router-dom";
-import { LayoutGrid, User, Bug, BarChart2, FileText } from "lucide-react";
+import { NavLink, useNavigate } from "react-router-dom";
+import { LayoutGrid, User, Bug, BarChart2, FileText, Moon, Sun, LogOut } from "lucide-react";
 import "./Navbar.css";
 import hebesec_png from "../images/hebesec_logo.png";
+
 const navItems = [
   { name: "Overview", icon: LayoutGrid, path: "/overview" },
   { name: "Discovery", icon: User, path: "/discovery" },
@@ -12,6 +13,7 @@ const navItems = [
 ];
 
 export default function Navbar() {
+  const navigate = useNavigate();
   const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
 
   useEffect(() => {
@@ -21,6 +23,11 @@ export default function Navbar() {
 
   const toggleTheme = () => {
     setTheme(theme === "light" ? "dark" : "light");
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/");
   };
 
   return (
@@ -43,9 +50,26 @@ export default function Navbar() {
           <span className="text-sm font-medium">{item.name}</span>
         </NavLink>
       ))}
-            <button className="theme-toggle" onClick={toggleTheme}>
-        {theme === "light" ? "Dark Mode" : "Light Mode"}
-      </button>
+
+      <div className="navbar-footer">
+        <button className="theme-toggle" onClick={toggleTheme}>
+          {theme === "light" ? (
+            <>
+              <Moon className="w-4 h-4 mr-2" />
+              Dark Mode
+            </>
+          ) : (
+            <>
+              <Sun className="w-4 h-4 mr-2" />
+              Light Mode
+            </>
+          )}
+        </button>
+        <button className="logout-button" onClick={handleLogout}>
+          <LogOut className="w-4 h-4 mr-2" />
+          Logout
+        </button>
+      </div>
     </nav>
   );
 }

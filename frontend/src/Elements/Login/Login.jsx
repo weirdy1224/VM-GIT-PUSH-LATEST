@@ -53,7 +53,6 @@ export default function Login() {
             style={{
               width: "400px",
               position: "absolute",
-              top: "-70px",
               left: "350px",
             }}
           />
